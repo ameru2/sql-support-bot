@@ -43,7 +43,7 @@ export LANGSMITH_TRACING=true
 Run smoke tests:
 
 ```bash
-uv run pytest tests/test_agent_smoke.py -q
+uv run pytest tests/agent_smoke_tests.py -q
 ```
 
 Run eval script:
