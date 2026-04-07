@@ -1,51 +1,66 @@
-# SQL Support Bot
+# SQL Support Bot Evals
 
-Customer support chatbot built with DeepAgents that interacts with a SQL database (Chinook music store) to answer questions about music and customer accounts.
+This repo includes two fast eval loops:
 
-## What This Bot Does
+1. `pytest` smoke tests for quick local regression checks
+2. LangSmith dataset-style evals for experiment-style runs
 
-This bot can help customers:
-1. **Find music** - search for songs, albums, and artists in the catalog
-2. **Access account info** - look up customer account details
+## Why these evals
 
-The bot uses DeepAgents to autonomously decide which tools to use based on the customer's query.
+The agent supports two main jobs:
+- music/catalog lookup
+- customer account lookup
 
-## Setup
+The key behaviors to test are:
+- basic catalog retrieval
+- fuzzy match / recovery behavior
+- requiring customer ID before account lookup
+- multi-turn account flows
+- robustness to malformed / adversarial input
+- graceful handling of out-of-scope requests
+
+## Run locally
 
 Install dependencies:
+
 ```bash
 uv sync
 ```
 
-Set your OpenAI API key:
+Set required env vars:
+
 ```bash
-export OPENAI_API_KEY="your-key-here"
+export OPENAI_API_KEY=your_key_here
 ```
 
-## Usage
+Optional for LangSmith uploads:
 
-### Python Script
 ```bash
-uv run python agent.py
+export LANGSMITH_API_KEY=your_langsmith_key_here
+export LANGSMITH_TRACING=true
 ```
 
-Type your questions and the agent will respond. Type `quit` to exit.
+Run smoke tests:
 
-### Jupyter Notebook
 ```bash
-uv run jupyter notebook
+uv run pytest tests/test_agent_smoke.py -q
 ```
 
-Then open `agent.ipynb` and run cells sequentially to interact with the agent.
+Run eval script:
 
-## Example Queries
+```bash
+uv run python -m evals.run_evals
+```
 
-- "Can you help me find songs by The Beatles?"
-- "What albums does Pink Floyd have?"
-- "What's the email for customer ID 5?"
+If `LANGSMITH_TRACING = true`, the results will also upload to LangSmith.
 
-## How It Works
+## Design choices
 
-- **Database**: Uses the Chinook database (downloads automatically on first run)
-- **Tools**: Agent has access to 4 tools for searching music and looking up customer info
-- **Routing**: DeepAgents automatically decides which tool(s) to use based on the query
+I intentionally used:
+
+- small representative datasets
+- mostly deterministic evaluators
+- a stable target wrapper around the agent
+- both single-turn and multi-turn test cases
+
+This makes it easy to change prompts, tools, or model settings and quickly see regressions. 
