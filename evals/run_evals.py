@@ -5,7 +5,7 @@ from typing import Any
 
 from langsmith.evaluation import evaluate
 
-from agent import agent
+from agent import create_agent
 from evals.cases import EVAL_CASES
 from evals.evaluators import (
     asks_for_customer_id,
@@ -29,7 +29,10 @@ def run_sql_support_bot(inputs: dict[str, Any]) -> dict[str, str]:
         "output": "<final assistant message text>"
       }
     """
-    result = agent.invoke({"messages": inputs["messages"]})
+    _agent = create_agent()
+
+def run_sql_support_bot(inputs: dict[str, Any]) -> dict[str, str]:
+    result = _agent.invoke({"messages": inputs["messages"]})
     messages = result.get("messages", [])
 
     if not messages:
