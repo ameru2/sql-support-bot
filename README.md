@@ -64,3 +64,59 @@ I intentionally used:
 - both single-turn and multi-turn test cases
 
 This makes it easy to change prompts, tools, or model settings and quickly see regressions. 
+
+## Robustness Bug Discovered via Evals
+
+During evaluation, I included robustness test cases designed to simulate real-world user input, including punctuation and edge cases.
+
+One such test uncovered a bug in the agent’s SQL tool layer:
+
+**❌ Failing Case**
+
+Input:
+
+```bash
+Do you have songs by Guns N' Roses?
+```
+
+**Observed behavior:**
+
+The agent attempted to construct a SQL query using string interpolation
+The apostrophe in N' broke the SQL syntax
+Resulted in a runtime SQL error (sqlite3.OperationalError)
+
+**Root cause:**
+The SQL query was built using raw string interpolation:
+
+```python
+WHERE Artist.Name LIKE '%Guns N' Roses%';
+```
+This breaks because ' terminates the string early.
+
+**🛠 Fix Implemented**
+
+I fixed this by escaping user-provided input before inserting it into SQL queries.
+
+``` python
+def escape_sql_string(value: str) -> str:
+    return value.replace("'", "''")
+```
+
+Then applied it in all SQL tool functions:
+
+```python
+artist_escaped = escape_sql_string(artist)
+```
+
+This ensures:
+
+```bash
+Guns N' Roses → Guns N'' Roses
+```
+
+which is valid SQL.
+
+**✅ Result (after fix)**
+- The same test case now passes
+- The agent successfully returns songs by "Guns N' Roses"
+- No SQL errors are thrown
