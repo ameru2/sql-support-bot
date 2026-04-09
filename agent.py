@@ -38,6 +38,9 @@ def get_engine_for_chinook_db():
         connect_args={"check_same_thread": False},
     )
 
+"""Escape single quotes for safe embedding inside SQL string literals."""
+def escape_sql_string(value: str) -> str:
+    return value.replace("'", "''")
 
 engine = get_engine_for_chinook_db()
 db = SQLDatabase(engine)
