@@ -15,6 +15,7 @@ from evals.evaluators import (
     returns_nonempty_answer,
 )
 
+_agent = create_agent()
 
 def run_sql_support_bot(inputs: dict[str, Any]) -> dict[str, str]:
     """
