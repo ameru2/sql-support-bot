@@ -64,15 +64,16 @@ def get_albums_by_artist(artist: str):
 @tool
 def get_tracks_by_artist(artist: str):
     """Get songs by an artist (or similar artists)."""
+    artist_escaped = escape_sql_string(artist)
     return db.run(
         f"""
         SELECT Track.Name as SongName, Artist.Name as ArtistName
         FROM Album
         LEFT JOIN Artist ON Album.ArtistId = Artist.ArtistId
         LEFT JOIN Track ON Track.AlbumId = Album.AlbumId
-        WHERE Artist.Name LIKE '%{artist}%';
+        WHERE Artist.Name LIKE '%{artist_escaped}%';
         """,
-        include_columns=True
+        include_columns=True,
     )
 
 
